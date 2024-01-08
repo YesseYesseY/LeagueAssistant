@@ -11,13 +11,17 @@ public class Item
 
     [JsonProperty("itemID")]
     public int ItemID { get; set; }
+
     [JsonProperty("id")]
     public int ID { get; set; }
+
+    [JsonProperty("count")]
+    public int Count { get; set; }
 
     [JsonProperty("displayName")]
     public string DisplayName { get; set; }
 
-    public int totalGold => totalPrices.ContainsKey(ItemID) ? totalPrices[ItemID] : 0;
+    public int totalGold => totalPrices.ContainsKey(ItemID) ? totalPrices[ItemID] * Count : 0;
 
     public Item()
     {

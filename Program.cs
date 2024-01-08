@@ -37,6 +37,19 @@ chaos_gold = 26
 
 */
 
+var top_team = 1;
+var top_top = 4;
+var top_jungle = 6;
+var top_mid = 8;
+var top_adc = 10;
+var top_support = 12;
+
+var left_order_name = 1;
+var left_order_gold = 18;
+
+var left_chaos_name = 33;
+var left_chaos_gold = 26;
+
 LcuApi lcuApi = new LcuApi();
 await lcuApi.SetupItems();
 
@@ -49,7 +62,8 @@ lcuApi.WSReceive("OnJsonApiEvent_lol-gameflow_v1_gameflow-phase", "/lol-gameflow
     }
 });
 
-if(await lcuApi.Get("/lol-gameflow/v1/gameflow-phase") == "\"InProgress\"") await StartThing();
+// --ForceStart can be used for replays :)
+if(await lcuApi.Get("/lol-gameflow/v1/gameflow-phase") == "\"InProgress\"" || args.Contains("--ForceStart")) await StartThing();
 
 Console.Clear();
 Console.WriteLine("Waiting for game to start...");
@@ -74,10 +88,10 @@ async Task StartThing()
         Console.WriteLine($"Player: {player.SummonerName} - {player.Position} - {player.Team}");
     }
 
-    Console.SetCursorPosition(1, 1);
+    Console.SetCursorPosition(left_order_name, top_team);
     Console.Write("ORDER");
 
-    Console.SetCursorPosition(33, 1);
+    Console.SetCursorPosition(left_chaos_name, top_team);
     Console.Write("CHAOS");
     Dictionary<string, List<int>> teamPositions = new Dictionary<string, List<int>>();
     foreach (var player in playerList)
@@ -85,22 +99,22 @@ async Task StartThing()
         switch (player.Position)
         {
             case "TOP":
-                player.top = 4;
+                player.top = top_top;
                 break;
             case "JUNGLE":
-                player.top = 6;
+                player.top = top_jungle;
                 break;
             case "MIDDLE":
-                player.top = 8;
+                player.top = top_mid;
                 break;
             case "BOTTOM":
-                player.top = 10;
+                player.top = top_adc;
                 break;
             case "UTILITY":
-                player.top = 12;
+                player.top = top_support;
                 break;
             default:
-                var allPlayerTopValues = new int[] { 4, 6, 8, 10, 12 };
+                var allPlayerTopValues = new int[] { top_top, top_jungle, top_mid, top_adc, top_support };
                 var usedTopValues = teamPositions.ContainsKey(player.Team) ? teamPositions[player.Team] : new List<int>();
                 var availableTopValues = allPlayerTopValues.Except(usedTopValues);
                 player.top = availableTopValues.First();
@@ -116,13 +130,13 @@ async Task StartThing()
         switch (player.Team)
         {
             case "ORDER":
-                player.left = 1;
+                player.left = left_order_name;
                 break;
             case "CHAOS":
-                player.left = 33;
+                player.left = left_chaos_name;
                 break;
             default:
-                player.left = 1;
+                player.left = 0;
                 break;
         }
 
@@ -150,7 +164,7 @@ async Task StartThing()
 
         foreach (var player in playerList)
         {
-            var left = player.Team == "ORDER" ? 18 : 26;
+            var left = player.Team == "ORDER" ? left_order_gold : left_chaos_gold;
             Console.SetCursorPosition(left, player.top);
             if (player.rival != null)
             {
@@ -161,12 +175,12 @@ async Task StartThing()
             Console.ForegroundColor = ConsoleColor.White;
         }
 
-        Console.SetCursorPosition(18, 1);
+        Console.SetCursorPosition(left_order_gold, top_team);
         Console.ForegroundColor = order_gold > chaos_gold ? ConsoleColor.Green : ConsoleColor.Red;
         Console.ForegroundColor = order_gold == chaos_gold ? ConsoleColor.Yellow : Console.ForegroundColor;
         Console.Write(order_gold);
 
-        Console.SetCursorPosition(26, 1);
+        Console.SetCursorPosition(left_chaos_gold, top_team);
         Console.ForegroundColor = chaos_gold > order_gold ? ConsoleColor.Green : ConsoleColor.Red;
         Console.ForegroundColor = chaos_gold == order_gold ? ConsoleColor.Yellow : Console.ForegroundColor;
         Console.Write(chaos_gold);
