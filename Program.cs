@@ -40,22 +40,34 @@ chaos_gold = 26
 LcuApi lcuApi = new LcuApi();
 await lcuApi.SetupItems();
 
-// TODO: Start when ingame and stop when not ingame
-Console.Clear();
-Console.WriteLine(basicLayout);
-
-await StartThing();
-
-void Exit(string reason = "")
+lcuApi.WSReceive("OnJsonApiEvent_lol-gameflow_v1_gameflow-phase", "/lol-gameflow/v1/gameflow-phase", async (data) =>
 {
-    Console.Clear();
-    Console.WriteLine(reason);
-    Environment.Exit(0);
-}
+    var str = data as string;
+    if (str == "InProgress")
+    {
+        await StartThing();
+    }
+});
+
+if(await lcuApi.Get("/lol-gameflow/v1/gameflow-phase") == "\"InProgress\"") await StartThing();
+
+Console.Clear();
+Console.WriteLine("Waiting for game to start...");
+
+while(true) await Task.Delay(1000);
 
 async Task StartThing()
-{        
-    if (!lcuApi.GetPlayerList(out var playerList)) Exit("No player list found");
+{
+    Console.Clear();
+    Console.WriteLine(basicLayout);
+    if (!lcuApi.GetPlayerList(out var playerList)) return; // Exit("No player list found");
+
+    while (playerList.Count <= 0)
+    {
+        await Task.Delay(1000);
+        if (!lcuApi.GetPlayerList(out playerList)) return; // Exit("No player list found");
+    }
+    Console.WriteLine("Player list found, amount: " + playerList.Count);
 
     foreach (var player in playerList)
     {
@@ -123,11 +135,13 @@ async Task StartThing()
         player.rival = playerList.Find(p => p.top == player.top && p.Team != player.Team);
     }
 
-    while (true)
+    bool shouldExit = false;
+
+    while (!shouldExit)
     {
         foreach (var player in playerList)
         {
-            if(!lcuApi.GetItems(player, out var items)) Exit("No items found");
+            if(!lcuApi.GetItems(player, out var items)) shouldExit = true; // Exit("No items found");
             player.totalGold = items.Sum(item => item.totalGold);
         }
 
@@ -161,4 +175,7 @@ async Task StartThing()
 
         await Task.Delay(1000);
     }
+
+    Console.Clear();
+    Console.WriteLine("Waiting for game to start...");
 }

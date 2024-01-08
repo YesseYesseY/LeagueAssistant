@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="newtonsoft.json" Version="13.0.3" />
+    <PackageReference Include="WebsocketSharp" Version="1.0.3-rc11" />
   </ItemGroup>
 
 </Project>
