@@ -12,7 +12,7 @@ To build it just use
 dotnet build 
 ```
 
-For running just open the .exe or do (You need to be ingame first for now)
+For running just open the .exe or do
 ```
 dotnet run
 ```
